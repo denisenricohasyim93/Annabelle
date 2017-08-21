@@ -1,39 +1,116 @@
-import React, { Component } from 'react';
-import { AppRegistry, FlatList, StyleSheet, Text, View } from 'react-native';
+/**
+ * Sample React Native App
+ * https://github.com/facebook/react-native
+ */
 
-export default class FlatListBasics extends Component {
+import React, {
+  Component,
+} from 'react';
+import {
+  AppRegistry,
+  Image,
+  ListView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+
+var REQUEST_URL = 'https://raw.githubusercontent.com/facebook/react-native/master/docs/MoviesExample.json';
+
+class App extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      dataSource: new ListView.DataSource({
+        rowHasChanged: (row1, row2) => row1 !== row2,
+      }),
+      loaded: false,
+    };
+  }
+
+  componentDidMount() {
+    this.fetchData();
+  }
+
+  fetchData() {
+    fetch(REQUEST_URL)
+      .then((response) => response.json())
+      .then((responseData) => {
+        this.setState({
+          dataSource: this.state.dataSource.cloneWithRows(responseData.movies),
+          loaded: true,
+        });
+      })
+      .done();
+  }
+
   render() {
+    if (!this.state.loaded) {
+      return this.renderLoadingView();
+    }
+
+    return (
+      <ListView
+        dataSource={this.state.dataSource}
+        renderRow={this.renderMovie}
+        style={styles.listView}
+      />
+    );
+  }
+
+  renderLoadingView() {
     return (
       <View style={styles.container}>
-        <FlatList
-          data={[
-            {key: 'Devin'},
-            {key: 'Jackson'},
-            {key: 'James'},
-            {key: 'Joel'},
-            {key: 'John'},
-            {key: 'Jillian'},
-            {key: 'Jimmy'},
-            {key: 'Julie'},
-          ]}
-          renderItem={({item}) => <Text style={styles.item}>{item.key}</Text>}
+        <Text>
+          Loading movies...
+        </Text>
+      </View>
+    );
+  }
+
+  renderMovie(movie) {
+    return (
+      <View style={styles.container}>
+        <Image
+          source={{uri: movie.posters.thumbnail}}
+          style={styles.thumbnail}
         />
+        <View style={styles.rightContainer}>
+          <Text style={styles.title}>{movie.title}</Text>
+          <Text style={styles.year}>{movie.year}</Text>
+        </View>
       </View>
     );
   }
 }
 
-const styles = StyleSheet.create({
+var styles = StyleSheet.create({
   container: {
-   flex: 1,
-   paddingTop: 22
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5FCFF',
   },
-  item: {
-    padding: 10,
-    fontSize: 18,
-    height: 44,
+  rightContainer: {
+    flex: 1,
   },
-})
+  title: {
+    fontSize: 20,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  year: {
+    textAlign: 'center',
+  },
+  thumbnail: {
+    width: 53,
+    height: 81,
+  },
+  listView: {
+    paddingTop: 20,
+    backgroundColor: '#F5FCFF',
+  },
+});
 
-// skip this line if using Create React Native App
-AppRegistry.registerComponent('AwesomeProject', () => FlatListBasics);
+AppRegistry.registerComponent('SampleAppMovies', () => SampleAppMovies);
